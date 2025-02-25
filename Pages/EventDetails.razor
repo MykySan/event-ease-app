@@ -1,0 +1,60 @@
+@page "/event/{EventId:int}"
+@inject EventEaseApp.Services.EventService EventService
+@inject EventEaseApp.Services.AttendanceService AttendanceService
+@inject NavigationManager Navigation
+
+<h2>Event Details</h2>
+
+@if (eventDetails != null)
+{
+    <p><strong>Name:</strong> @eventDetails.Name</p>
+    <p><strong>Date:</strong> @eventDetails.Date.ToShortDateString()</p>
+    <p><strong>Location:</strong> @eventDetails.Location</p>
+    <button @onclick="NavigateToRegister">Register for Event</button>
+
+    <h3>Registered Attendees</h3>
+    @if (attendees.Count == 0)
+    {
+        <p>No attendees yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var attendee in attendees)
+            {
+                <li>
+                    @attendee.UserName - @attendee.UserEmail
+                    <button class="remove-button" @onclick="() => RemoveAttendee(attendee.UserEmail)">Remove</button>
+                </li>
+            }
+        </ul>
+    }
+}
+else
+{
+    <p style="color:red;">Event not found.</p>
+}
+
+@code {
+    [Parameter] public int EventId { get; set; }
+
+    private EventEaseApp.Models.EventModel? eventDetails;
+    private List<EventEaseApp.Models.RegistrationModel> attendees = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventDetails = EventService.GetEventById(EventId);
+        attendees = await AttendanceService.GetEventAttendees(EventId);
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo($"/register/{EventId}");
+    }
+
+    private async Task RemoveAttendee(string email)
+    {
+        await AttendanceService.RemoveAttendee(email, EventId);
+        attendees = await AttendanceService.GetEventAttendees(EventId);
+    }
+}

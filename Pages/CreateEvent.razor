@@ -1,0 +1,55 @@
+@page "/createvent"
+@inject EventEaseApp.Services.EventService EventService
+@inject NavigationManager Navigation
+
+<h1>Create a New Event</h1>
+
+<EditForm Model="newEvent" OnValidSubmit="AddEvent">
+    <DataAnnotationsValidator />
+
+    <div class="input-group">
+        <label>Event Name:</label>
+        <InputText @bind-Value="newEvent.Name" class="input-field" />
+        <ValidationMessage For="@(() => newEvent.Name)" class="validation-message" />
+    </div>
+
+    <div class="input-group">
+        <label>Event Date:</label>
+        <InputDate @bind-Value="newEvent.Date" class="input-field" />
+        <ValidationMessage For="@(() => newEvent.Date)" class="validation-message" />
+    </div>
+
+    <div class="input-group">
+        <label>Location:</label>
+        <InputText @bind-Value="newEvent.Location" class="input-field" />
+        <ValidationMessage For="@(() => newEvent.Location)" class="validation-message" />
+    </div>
+
+    <div class="button-group">
+        <button type="submit" class="submit-button">Create Event</button>
+        <button type="button" class="back-button" @onclick="GoBack">⬅ Back to Events</button>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p class="success-message">@successMessage</p>
+}
+
+@code {
+    private EventEaseApp.Models.EventModel newEvent = new();
+    private string successMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EventService.Initialize();
+    }
+    private async Task AddEvent()
+    {
+        await EventService.AddEvent(newEvent);
+        successMessage = "Event created successfully!";
+        newEvent = new();
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/");
+}

@@ -1,0 +1,33 @@
+﻿@page "/"
+@inject EventEaseApp.Services.EventService EventService
+
+<PageTitle>Home</PageTitle>
+
+<h2>Upcoming Events</h2>
+
+@if (events == null || events.Count == 0)
+{
+    <p>Loading events...</p>
+}
+else
+{
+    <Virtualize Items="@events" Context="eventItem">
+        <EventCard EventId="@eventItem.Id" 
+                   EventName="@eventItem.Name" 
+                   EventDate="@eventItem.Date"
+                   EventLocation="@eventItem.Location" />
+    </Virtualize>
+}
+
+@code
+{
+    private List<EventEaseApp.Models.EventModel> events = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EventService.Initialize();
+        await Task.Delay(500);
+        events = EventService.GetEvents();
+        StateHasChanged();
+    }
+}

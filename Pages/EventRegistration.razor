@@ -1,0 +1,64 @@
+@page "/register/{EventId:int}"
+@inject EventEaseApp.Services.EventService EventService
+@inject EventEaseApp.Services.AttendanceService AttendanceService
+@inject NavigationManager Navigation
+
+<h2>Register for @eventDetails?.Name</h2>
+
+<EditForm Model="registrationModel" OnValidSubmit="SubmitRegistration">
+    <DataAnnotationsValidator />
+
+    <div class="input-group">
+        <label>Name:</label>
+        <InputText @bind-Value="registrationModel.UserName" class="input-field"/>
+        <ValidationMessage For="@(() => registrationModel.UserName)" class="validation-message"/>
+    </div>
+
+    <div class="input-group">
+        <label>Email:</label>
+        <InputText @bind-Value="registrationModel.UserEmail" class="input-field"/>
+        <ValidationMessage For="@(() => registrationModel.UserEmail)" class="validation-message"/>
+    </div>
+
+    <button type="submit" class="submit-button">Register</button>
+    <button type="button" class="back-button" @onclick="GoBack">⬅ Back</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p class="success-message">@successMessage</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="error-message">@errorMessage</p>
+}
+
+@code {
+    [Parameter] public int EventId { get; set; }
+    private EventEaseApp.Models.EventModel? eventDetails;
+    private EventEaseApp.Models.RegistrationModel registrationModel = new();
+    private string successMessage = "";
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        eventDetails = EventService.GetEventById(EventId);
+        registrationModel.EventId = EventId;
+    }
+
+    private async Task SubmitRegistration()
+    {
+        if (await AttendanceService.IsUserRegistered(registrationModel.UserEmail, EventId))
+        {
+            errorMessage = "You are already registered for this event!";
+            return;
+        }
+
+        await AttendanceService.RegisterUser(registrationModel);
+        successMessage = $"Successfully registered {registrationModel.UserName} for {eventDetails?.Name}";
+        errorMessage = "";
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/register");
+}

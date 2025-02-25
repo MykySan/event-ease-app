@@ -1,0 +1,37 @@
+@page "/register"
+@inject EventEaseApp.Services.EventService EventService
+@inject NavigationManager Navigation
+
+<h1>Register for an Event</h1>
+<p>Select an event from the list below to proceed with registration.</p>
+
+@if (events.Count == 0)
+{
+    <p>No available events.</p>
+}
+else
+{
+    @foreach (var eventItem in events)
+    {
+        <div class="event-card">
+            <h3>@eventItem.Name</h3>
+            <p><strong>Date:</strong> @eventItem.Date.ToShortDateString()</p>
+            <p><strong>Location:</strong> @eventItem.Location</p>
+            <button @onclick="() => GoToRegistration(eventItem.Id)">➡ Register</button>
+        </div>
+    }
+}
+
+@code {
+    private List<EventEaseApp.Models.EventModel> events = new();
+
+    protected override void OnInitialized()
+    {
+        events = EventService.GetEvents();
+    }
+
+    private void GoToRegistration(int eventId)
+    {
+        Navigation.NavigateTo($"/register/{eventId}");
+    }
+}

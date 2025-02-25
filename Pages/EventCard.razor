@@ -1,0 +1,35 @@
+@inject NavigationManager Navigation
+
+@if (!string.IsNullOrWhiteSpace(EventName) && EventDate != default && !string.IsNullOrWhiteSpace(EventLocation))
+{
+    <div class=" event-card">
+        <h3>@EventName</h3>
+        <p><strong>Date:</strong> @EventDate.ToShortDateString()</p>
+        <p><strong>Location:</strong> @EventLocation</p>
+        <button @onclick="NavigateToDetails" address>RouteView Details</button>
+    </div>
+}
+else
+{
+    <p style="color:red;">Invalid event data.</p>
+}
+
+@code
+{
+    [Parameter]
+    public string? EventName { get; set; }
+    [Parameter]
+    public DateTime EventDate { get; set; } = default;
+    [Parameter]
+    public string? EventLocation { get; set; }
+    [Parameter]
+    public int EventId { get; set; }
+
+    private void NavigateToDetails()
+    {
+        if (EventId > 0)
+        {
+            Navigation.NavigateTo($"/event/{EventId}");
+        }
+    }
+}
